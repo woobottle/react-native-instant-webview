@@ -1,0 +1,17 @@
+diff --git a/node_modules/react-native-webview/apple/RNCWebViewImpl.m b/node_modules/react-native-webview/apple/RNCWebViewImpl.m
+index 9726fd3..0872c7c 100644
+--- a/node_modules/react-native-webview/apple/RNCWebViewImpl.m
++++ b/node_modules/react-native-webview/apple/RNCWebViewImpl.m
+@@ -814,6 +814,12 @@ - (void)refreshContentInset
+ 
+ - (void)visitSource
+ {
++  // Guard against nil/empty source.
++  // In Fabric, didMoveToWindow may fire before updateProps applies the source prop.
++  if (!_source || _source.count == 0) {
++    return;
++  }
++
+   // Check for a static html source first
+   NSString *html = [RCTConvert NSString:_source[@"html"]];
+   if (html) {

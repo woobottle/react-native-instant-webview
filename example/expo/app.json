@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "InstantWebViewExample",
+    "slug": "instant-webview-example",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "instant-webview-example",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.instantwebview"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.example.instantwebview"
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}
