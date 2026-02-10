@@ -65,11 +65,12 @@ describe('PooledWebView integration', () => {
     expect(state.borrowedCount).toBe(0);
   });
 
-  it('should call onPoolExhausted when pool is empty', () => {
+  it('should fall back to regular WebView when pool is exhausted', () => {
     const onPoolExhausted = jest.fn();
+    let renderer: ReactTestRenderer;
 
     act(() => {
-      create(
+      renderer = create(
         <WebViewPoolProvider config={{ poolSize: 1 }}>
           <PooledWebView source={{ uri: 'https://a.com' }} />
           <PooledWebView
@@ -81,6 +82,12 @@ describe('PooledWebView integration', () => {
     });
 
     expect(onPoolExhausted).toHaveBeenCalled();
+
+    // The fallback PooledWebView should render a regular WebView
+    const json = JSON.stringify(renderer!.toJSON());
+    // 1 pooled WebView (borrowed) + 1 fallback WebView = 2 total
+    const matches = json.match(/WebView/g);
+    expect(matches!.length).toBe(2);
   });
 
   it('should call onBorrowed with instance id', () => {

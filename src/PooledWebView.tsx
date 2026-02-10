@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
+import { WebView } from 'react-native-webview';
 import type { WebViewProps } from 'react-native-webview';
 import type { PooledWebViewProps } from './types';
 import { useWebViewPool } from './WebViewPoolProvider';
@@ -22,6 +23,7 @@ const PooledWebView: React.FC<PooledWebViewProps> = ({
   const propsRef = useRef<Partial<WebViewProps>>({ source, ...webViewProps });
 
   const [borrowed, setBorrowed] = useState(false);
+  const [fallback, setFallback] = useState(false);
 
   // Keep propsRef in sync without triggering re-renders
   propsRef.current = { source, ...webViewProps };
@@ -30,6 +32,7 @@ const PooledWebView: React.FC<PooledWebViewProps> = ({
   useEffect(() => {
     const result = pool.borrow(borrowerIdRef.current);
     if (!result) {
+      setFallback(true);
       onPoolExhausted?.();
       return;
     }
@@ -80,6 +83,15 @@ const PooledWebView: React.FC<PooledWebViewProps> = ({
     },
     [pool],
   );
+
+  // Pool exhausted — fall back to a regular WebView
+  if (fallback) {
+    return (
+      <View style={[{ flex: 1 }, containerStyle]}>
+        <WebView source={source} {...webViewProps} style={{ flex: 1 }} />
+      </View>
+    );
+  }
 
   return (
     <View

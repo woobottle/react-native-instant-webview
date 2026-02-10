@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import type { ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import type { WebView, WebViewProps } from 'react-native-webview';
 
 export interface PoolConfig {
@@ -51,7 +51,7 @@ export interface WebViewPoolContextValue {
 
 export interface PooledWebViewProps extends Omit<WebViewProps, 'ref'> {
   poolKey?: string;
-  containerStyle?: ViewStyle;
+  containerStyle?: StyleProp<ViewStyle>;
   onPoolExhausted?: () => void;
   onBorrowed?: (instanceId: string) => void;
   onReturned?: (instanceId: string) => void;
