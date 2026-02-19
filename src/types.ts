@@ -58,6 +58,7 @@ export interface WebViewPoolContextValue {
   setInstanceProps: (instanceId: string, props: Partial<WebViewProps>) => void;
   getInstanceLayout: (instanceId: string) => InstanceLayout | null;
   getInstanceProps: (instanceId: string) => Partial<WebViewProps> | undefined;
+  getWebViewRef: (instanceId: string) => WebView | null;
   warmUp: (url: string, options?: WarmUpOptions) => WarmUpHandle | null;
   cancelWarmUp: (url: string) => void;
 }

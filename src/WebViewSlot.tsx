@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, type ViewStyle } from 'react-native';
-import { WebView, type WebViewNavigation } from 'react-native-webview';
+import { WebView } from 'react-native-webview';
 import { BLANK_HTML_SOURCE, CLEANUP_SCRIPT, HIDDEN_STYLE } from './constants';
 import { hasNativeModule, detachView, attachView } from './native/NativeViewDetachment';
 import type { InstanceLayout, PoolConfig, WebViewInstance } from './types';
@@ -88,13 +88,6 @@ const WebViewSlot: React.FC<WebViewSlotProps> = ({
     };
   }, [isVisible, layout]);
 
-  const handleNavigationStateChange = useCallback(
-    (navState: WebViewNavigation) => {
-      instanceProps?.onNavigationStateChange?.(navState);
-    },
-    [instanceProps],
-  );
-
   const source = useMemo(() => {
     if (instance.status === 'warming' && instance.warmedUrl) {
       return { uri: instance.warmedUrl };
@@ -119,11 +112,13 @@ const WebViewSlot: React.FC<WebViewSlotProps> = ({
       {shouldRenderWebView && (
         <WebView
           ref={instance.webViewRef as React.RefObject<WebView>}
+          {...(config.defaultWebViewProps || {})}
           {...(instance.status === 'borrowed' ? instanceProps : undefined)}
           source={source}
-          onNavigationStateChange={handleNavigationStateChange}
-          style={{ flex: 1 }}
-          {...(config.defaultWebViewProps || {})}
+          style={[
+            { flex: 1 },
+            instance.status === 'borrowed' ? instanceProps?.style : undefined,
+          ]}
         />
       )}
     </View>

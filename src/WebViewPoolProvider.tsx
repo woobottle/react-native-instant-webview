@@ -1,6 +1,6 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import type { WebViewProps } from 'react-native-webview';
+import type { WebView, WebViewProps } from 'react-native-webview';
 import { DEFAULT_POOL_CONFIG } from './constants';
 import WebViewManager from './WebViewManager';
 import WebViewSlot from './WebViewSlot';
@@ -81,8 +81,7 @@ export const WebViewPoolProvider: React.FC<WebViewPoolProviderProps> = ({
   const setInstanceProps = useCallback(
     (instanceId: string, props: Partial<WebViewProps>): void => {
       propsRef.current.set(instanceId, props);
-      // No forceRender here — the slot reads from propsRef on next render
-      // triggered by the Manager's state change (borrow/release).
+      forceRender((c) => c + 1);
     },
     [],
   );
@@ -97,6 +96,16 @@ export const WebViewPoolProvider: React.FC<WebViewPoolProviderProps> = ({
   const getInstanceProps = useCallback(
     (instanceId: string): Partial<WebViewProps> | undefined => {
       return propsRef.current.get(instanceId);
+    },
+    [],
+  );
+
+  const getWebViewRef = useCallback(
+    (instanceId: string): WebView | null => {
+      const inst = managerRef.current
+        .getState()
+        .instances.find((i) => i.id === instanceId);
+      return inst?.webViewRef.current ?? null;
     },
     [],
   );
@@ -116,17 +125,24 @@ export const WebViewPoolProvider: React.FC<WebViewPoolProviderProps> = ({
     managerRef.current.markIdle(instanceId);
   }, []);
 
-  const contextValue: WebViewPoolContextValue = {
-    state: poolState,
-    borrow,
-    release,
-    setInstanceLayout,
-    setInstanceProps,
-    getInstanceLayout,
-    getInstanceProps,
-    warmUp,
-    cancelWarmUp,
-  };
+  const contextValue = useMemo<WebViewPoolContextValue>(
+    () => ({
+      state: poolState,
+      borrow,
+      release,
+      setInstanceLayout,
+      setInstanceProps,
+      getInstanceLayout,
+      getInstanceProps,
+      getWebViewRef,
+      warmUp,
+      cancelWarmUp,
+    }),
+    // All callbacks are stable (useCallback with [] deps).
+    // Only poolState triggers a new context value.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [poolState],
+  );
 
   return (
     <WebViewPoolContext.Provider value={contextValue}>

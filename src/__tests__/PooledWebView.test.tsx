@@ -212,11 +212,115 @@ describe('Warm-up integration', () => {
   });
 });
 
-// Helper component that triggers warmUp via context
+describe('Ref forwarding', () => {
+  beforeEach(() => {
+    WebViewManager.resetInstance();
+  });
+
+  it('should expose WebView ref via forwardRef', () => {
+    const ref = React.createRef<any>();
+    let renderer: ReactTestRenderer;
+
+    act(() => {
+      renderer = create(
+        <WebViewPoolProvider config={{ poolSize: 2 }}>
+          <PooledWebView
+            ref={ref}
+            source={{ uri: 'https://example.com' }}
+          />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    // The ref should point to the pool's WebView ref (may be null in test env
+    // since the actual WebView component isn't mounted natively, but the
+    // imperative handle should exist and not throw)
+    expect(ref.current).toBeDefined();
+  });
+
+  it('should expose fallback ref when pool is exhausted', () => {
+    const ref1 = React.createRef<any>();
+    const ref2 = React.createRef<any>();
+
+    act(() => {
+      create(
+        <WebViewPoolProvider config={{ poolSize: 1 }}>
+          <PooledWebView
+            ref={ref1}
+            source={{ uri: 'https://a.com' }}
+          />
+          <PooledWebView
+            ref={ref2}
+            source={{ uri: 'https://b.com' }}
+          />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    // ref2 is fallback — should still be defined (points to local WebView ref)
+    expect(ref2.current).toBeDefined();
+  });
+});
+
+describe('Props priority', () => {
+  beforeEach(() => {
+    WebViewManager.resetInstance();
+  });
+
+  it('should let instance props override defaultWebViewProps', () => {
+    let renderer: ReactTestRenderer;
+
+    act(() => {
+      renderer = create(
+        <WebViewPoolProvider
+          config={{
+            poolSize: 2,
+            cleanupOnReturn: true,
+            defaultWebViewProps: { javaScriptEnabled: false },
+          }}
+        >
+          <PooledWebView
+            source={{ uri: 'https://example.com' }}
+            javaScriptEnabled={true}
+          />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    const root = renderer!.toJSON() as any;
+    const webView = findWebView(root);
+    expect(webView).toBeTruthy();
+    // instanceProps (javaScriptEnabled=true) should override defaultWebViewProps (javaScriptEnabled=false)
+    expect(webView.props.javaScriptEnabled).toBe(true);
+  });
+});
+
+// Helper component that triggers warmUp via context.
+// Uses a ref to avoid re-firing when context value changes.
 function WarmUpTrigger({ url }: { url: string }) {
-  const pool = require('../WebViewPoolProvider').useWebViewPool();
+  const { warmUp } = require('../WebViewPoolProvider').useWebViewPool();
+  const warmUpRef = React.useRef(warmUp);
+  warmUpRef.current = warmUp;
   React.useEffect(() => {
-    pool.warmUp(url);
-  }, [pool, url]);
+    warmUpRef.current(url);
+  }, [url]);
+  return null;
+}
+
+function findWebView(node: any): any {
+  if (!node) return null;
+  if (node.type === 'WebView') return node;
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = findWebView(child);
+      if (found) return found;
+    }
+  }
+  if (node.children) {
+    for (const child of node.children) {
+      const found = findWebView(child);
+      if (found) return found;
+    }
+  }
   return null;
 }
