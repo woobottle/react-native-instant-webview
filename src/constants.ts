@@ -6,6 +6,8 @@ export const DEFAULT_POOL_CONFIG: PoolConfig = {
   cleanupOnReturn: true,
 };
 
+export const DEFAULT_WARMUP_TIMEOUT = 30000;
+
 export const HIDDEN_STYLE: ViewStyle = {
   position: 'absolute',
   width: 1,

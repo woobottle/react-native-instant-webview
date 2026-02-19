@@ -30,7 +30,9 @@ const PooledWebView: React.FC<PooledWebViewProps> = ({
 
   // Borrow on mount
   useEffect(() => {
-    const result = pool.borrow(borrowerIdRef.current);
+    const sourceUri =
+      source && 'uri' in source ? (source as { uri: string }).uri : undefined;
+    const result = pool.borrow(borrowerIdRef.current, sourceUri);
     if (!result) {
       setFallback(true);
       onPoolExhausted?.();

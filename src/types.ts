@@ -9,7 +9,7 @@ export interface PoolConfig {
   defaultWebViewProps?: Partial<WebViewProps>;
 }
 
-export type InstanceStatus = 'idle' | 'borrowed' | 'cleaning';
+export type InstanceStatus = 'idle' | 'borrowed' | 'cleaning' | 'warming';
 
 export interface WebViewInstance {
   id: string;
@@ -18,6 +18,7 @@ export interface WebViewInstance {
   borrowerId: string | null;
   createdAt: number;
   borrowedAt: number | null;
+  warmedUrl: string | null;
 }
 
 export interface PoolState {
@@ -39,14 +40,26 @@ export interface InstanceLayout {
   height: number;
 }
 
+export interface WarmUpOptions {
+  timeout?: number;
+}
+
+export interface WarmUpHandle {
+  url: string;
+  instanceId: string;
+  cancel: () => void;
+}
+
 export interface WebViewPoolContextValue {
   state: PoolState;
-  borrow: (borrowerId: string) => BorrowResult | null;
+  borrow: (borrowerId: string, url?: string) => BorrowResult | null;
   release: (instanceId: string) => void;
   setInstanceLayout: (instanceId: string, layout: InstanceLayout | null) => void;
   setInstanceProps: (instanceId: string, props: Partial<WebViewProps>) => void;
   getInstanceLayout: (instanceId: string) => InstanceLayout | null;
   getInstanceProps: (instanceId: string) => Partial<WebViewProps> | undefined;
+  warmUp: (url: string, options?: WarmUpOptions) => WarmUpHandle | null;
+  cancelWarmUp: (url: string) => void;
 }
 
 export interface PooledWebViewProps extends Omit<WebViewProps, 'ref'> {

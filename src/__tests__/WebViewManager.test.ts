@@ -151,6 +151,179 @@ describe('WebViewManager', () => {
     });
   });
 
+  describe('warmUp', () => {
+    it('should transition an idle instance to warming', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 2 });
+
+      const handle = mgr.warmUp('https://example.com');
+
+      expect(handle).not.toBeNull();
+      expect(handle!.url).toBe('https://example.com');
+
+      const inst = mgr
+        .getState()
+        .instances.find((i) => i.id === handle!.instanceId);
+      expect(inst!.status).toBe('warming');
+      expect(inst!.warmedUrl).toBe('https://example.com');
+    });
+
+    it('should not count warming instances as available', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 2 });
+
+      mgr.warmUp('https://example.com');
+
+      const state = mgr.getState();
+      expect(state.availableCount).toBe(1);
+    });
+
+    it('should return null when no idle instance is available', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 1 });
+
+      mgr.borrow('user-1');
+      const handle = mgr.warmUp('https://example.com');
+
+      expect(handle).toBeNull();
+    });
+
+    it('should return existing handle if URL is already warming', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 3 });
+
+      const h1 = mgr.warmUp('https://example.com');
+      const h2 = mgr.warmUp('https://example.com');
+
+      expect(h1).not.toBeNull();
+      expect(h2).not.toBeNull();
+      expect(h1!.instanceId).toBe(h2!.instanceId);
+      // Should not consume a second instance
+      expect(mgr.getState().availableCount).toBe(2);
+    });
+
+    it('should auto-cancel after timeout', () => {
+      jest.useFakeTimers();
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 2, cleanupOnReturn: true });
+
+      const handle = mgr.warmUp('https://example.com', { timeout: 5000 });
+      expect(handle).not.toBeNull();
+
+      jest.advanceTimersByTime(5000);
+
+      const inst = mgr
+        .getState()
+        .instances.find((i) => i.id === handle!.instanceId);
+      expect(inst!.status).toBe('cleaning');
+      expect(inst!.warmedUrl).toBeNull();
+
+      jest.useRealTimers();
+    });
+
+    it('should allow manual cancel via handle', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 2, cleanupOnReturn: true });
+
+      const handle = mgr.warmUp('https://example.com');
+      handle!.cancel();
+
+      const inst = mgr
+        .getState()
+        .instances.find((i) => i.id === handle!.instanceId);
+      expect(inst!.status).toBe('cleaning');
+    });
+
+    it('should cancel via cancelWarmUp(url)', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 2, cleanupOnReturn: false });
+
+      const handle = mgr.warmUp('https://example.com');
+      mgr.cancelWarmUp('https://example.com');
+
+      const inst = mgr
+        .getState()
+        .instances.find((i) => i.id === handle!.instanceId);
+      expect(inst!.status).toBe('idle');
+      expect(inst!.warmedUrl).toBeNull();
+    });
+  });
+
+  describe('borrow with URL matching', () => {
+    it('should prefer warming instance with matching URL', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 3 });
+
+      const warmHandle = mgr.warmUp('https://example.com');
+      const result = mgr.borrow('user-1', 'https://example.com');
+
+      expect(result).not.toBeNull();
+      expect(result!.instanceId).toBe(warmHandle!.instanceId);
+
+      const inst = mgr
+        .getState()
+        .instances.find((i) => i.id === result!.instanceId);
+      expect(inst!.status).toBe('borrowed');
+    });
+
+    it('should fall back to idle when URL does not match warming', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 3 });
+
+      mgr.warmUp('https://example.com');
+      const result = mgr.borrow('user-1', 'https://other.com');
+
+      expect(result).not.toBeNull();
+      // Should pick a different idle instance, not the warming one
+      const warmingInst = mgr
+        .getState()
+        .instances.find((i) => i.status === 'warming');
+      expect(warmingInst).toBeDefined();
+    });
+
+    it('should fall back to idle when no URL is provided', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 3 });
+
+      mgr.warmUp('https://example.com');
+      const result = mgr.borrow('user-1');
+
+      expect(result).not.toBeNull();
+      // Warming instance should remain warming
+      const warmingInst = mgr
+        .getState()
+        .instances.find((i) => i.status === 'warming');
+      expect(warmingInst).toBeDefined();
+    });
+
+    it('should keep warmedUrl on borrowed instance for skip-reload', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 2 });
+
+      mgr.warmUp('https://example.com');
+      const result = mgr.borrow('user-1', 'https://example.com');
+
+      const inst = mgr
+        .getState()
+        .instances.find((i) => i.id === result!.instanceId);
+      expect(inst!.warmedUrl).toBe('https://example.com');
+    });
+
+    it('should clear warmedUrl on release', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 2, cleanupOnReturn: true });
+
+      mgr.warmUp('https://example.com');
+      const result = mgr.borrow('user-1', 'https://example.com')!;
+      mgr.release(result.instanceId);
+
+      const inst = mgr
+        .getState()
+        .instances.find((i) => i.id === result.instanceId);
+      expect(inst!.warmedUrl).toBeNull();
+    });
+  });
+
   describe('subscribe', () => {
     it('should notify listeners on state changes', () => {
       const mgr = WebViewManager.getInstance();

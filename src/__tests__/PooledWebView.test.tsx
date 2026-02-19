@@ -13,6 +13,9 @@ jest.mock('react-native', () => {
   return {
     View,
     StyleSheet: { create: (s: any) => s },
+    NativeModules: {},
+    findNodeHandle: () => null,
+    TurboModuleRegistry: { get: () => null, getEnforcing: () => { throw new Error(); } },
   };
 });
 
@@ -140,3 +143,80 @@ describe('PooledWebView integration', () => {
     expect(state.availableCount).toBe(1);
   });
 });
+
+describe('Warm-up integration', () => {
+  let renderer: ReactTestRenderer;
+
+  beforeEach(() => {
+    WebViewManager.resetInstance();
+  });
+
+  afterEach(() => {
+    act(() => {
+      renderer?.unmount();
+    });
+  });
+
+  it('should borrow a warmed-up instance when URL matches', () => {
+    const mgr = WebViewManager.getInstance();
+
+    act(() => {
+      renderer = create(
+        <WebViewPoolProvider config={{ poolSize: 2 }}>
+          <WarmUpTrigger url="https://example.com" />
+          <PooledWebView source={{ uri: 'https://example.com' }} />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    const state = mgr.getState();
+    // The warmed instance should now be borrowed (matched URL)
+    expect(state.borrowedCount).toBe(1);
+    // The other instance should still be idle
+    expect(state.availableCount).toBe(1);
+  });
+
+  it('should render WebView in warming slot', () => {
+    act(() => {
+      renderer = create(
+        <WebViewPoolProvider config={{ poolSize: 2 }}>
+          <WarmUpTrigger url="https://example.com" />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    const json = JSON.stringify(renderer!.toJSON());
+    const matches = json.match(/WebView/g);
+    // 1 WebView should be rendered for the warming slot
+    expect(matches!.length).toBe(1);
+  });
+
+  it('should fall back to idle instance when URL does not match warming', () => {
+    act(() => {
+      renderer = create(
+        <WebViewPoolProvider config={{ poolSize: 3 }}>
+          <WarmUpTrigger url="https://example.com" />
+          <PooledWebView source={{ uri: 'https://other.com' }} />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    const state = WebViewManager.getInstance().getState();
+    expect(state.borrowedCount).toBe(1);
+    // warming instance + 1 idle
+    const warmingCount = state.instances.filter(
+      (i) => i.status === 'warming',
+    ).length;
+    expect(warmingCount).toBe(1);
+    expect(state.availableCount).toBe(1);
+  });
+});
+
+// Helper component that triggers warmUp via context
+function WarmUpTrigger({ url }: { url: string }) {
+  const pool = require('../WebViewPoolProvider').useWebViewPool();
+  React.useEffect(() => {
+    pool.warmUp(url);
+  }, [pool, url]);
+  return null;
+}

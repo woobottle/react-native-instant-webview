@@ -9,6 +9,8 @@ import type {
   InstanceLayout,
   PoolConfig,
   PoolState,
+  WarmUpHandle,
+  WarmUpOptions,
   WebViewPoolContextValue,
   WebViewPoolProviderProps,
 } from './types';
@@ -49,12 +51,15 @@ export const WebViewPoolProvider: React.FC<WebViewPoolProviderProps> = ({
     const unsub = mgr.subscribe((state) => {
       setPoolState(state);
     });
-    return unsub;
+    return () => {
+      unsub();
+      mgr.cancelAllWarmUps();
+    };
   }, []);
 
   const borrow = useCallback(
-    (borrowerId: string): BorrowResult | null => {
-      return managerRef.current.borrow(borrowerId);
+    (borrowerId: string, url?: string): BorrowResult | null => {
+      return managerRef.current.borrow(borrowerId, url);
     },
     [],
   );
@@ -96,6 +101,17 @@ export const WebViewPoolProvider: React.FC<WebViewPoolProviderProps> = ({
     [],
   );
 
+  const warmUp = useCallback(
+    (url: string, options?: WarmUpOptions): WarmUpHandle | null => {
+      return managerRef.current.warmUp(url, options);
+    },
+    [],
+  );
+
+  const cancelWarmUp = useCallback((url: string): void => {
+    managerRef.current.cancelWarmUp(url);
+  }, []);
+
   const handleCleanupComplete = useCallback((instanceId: string) => {
     managerRef.current.markIdle(instanceId);
   }, []);
@@ -108,6 +124,8 @@ export const WebViewPoolProvider: React.FC<WebViewPoolProviderProps> = ({
     setInstanceProps,
     getInstanceLayout,
     getInstanceProps,
+    warmUp,
+    cancelWarmUp,
   };
 
   return (

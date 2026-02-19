@@ -9,6 +9,20 @@ const StyleSheet = {
   create: (styles: any) => styles,
 };
 
-export { View, StyleSheet };
+const NativeModules: Record<string, any> = {};
+
+function findNodeHandle(_ref: any): number | null {
+  return null;
+}
+
+const TurboModuleRegistry = {
+  get: (_name: string) => null,
+  getEnforcing: (_name: string) => {
+    throw new Error('TurboModule not found');
+  },
+};
+
+export { View, StyleSheet, NativeModules, findNodeHandle, TurboModuleRegistry };
 export type ViewStyle = Record<string, any>;
 export type LayoutChangeEvent = { nativeEvent: { layout: { x: number; y: number; width: number; height: number } } };
+export type TurboModule = {};
