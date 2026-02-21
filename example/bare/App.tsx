@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { WebView } from 'react-native-webview';
 import { WebViewPoolProvider, PooledWebView } from 'react-native-instant-webview';
+import BenchmarkScreen from './benchmark/BenchmarkScreen';
 
 const URLS = [
   'https://reactnative.dev',
@@ -117,6 +118,15 @@ function NormalTabStack() {
   );
 }
 
+const BenchmarkStack = createNativeStackNavigator();
+function BenchmarkTabStack() {
+  return (
+    <BenchmarkStack.Navigator>
+      <BenchmarkStack.Screen name="BenchmarkHome" component={BenchmarkScreen} options={{ title: 'Benchmark' }} />
+    </BenchmarkStack.Navigator>
+  );
+}
+
 const Tab = createBottomTabNavigator();
 
 export default function App() {
@@ -126,6 +136,7 @@ export default function App() {
         <Tab.Navigator screenOptions={{ headerShown: false }}>
           <Tab.Screen name="Pooled" component={PooledTabStack} options={{ tabBarBadge: 'Pool' }} />
           <Tab.Screen name="Normal" component={NormalTabStack} />
+          <Tab.Screen name="Benchmark" component={BenchmarkTabStack} />
         </Tab.Navigator>
       </NavigationContainer>
     </WebViewPoolProvider>
