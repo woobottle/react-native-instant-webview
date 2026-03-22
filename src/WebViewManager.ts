@@ -46,6 +46,14 @@ class WebViewManager {
     if (this.initialized) return;
 
     this.config = { ...DEFAULT_POOL_CONFIG, ...config };
+
+    if (this.config.poolSize <= 0) {
+      console.warn(
+        '[react-native-instant-webview] poolSize must be greater than 0. Defaulting to 1.',
+      );
+      this.config.poolSize = 1;
+    }
+
     this.instances = [];
 
     for (let i = 0; i < this.config.poolSize; i++) {
@@ -108,7 +116,13 @@ class WebViewManager {
 
   release(instanceId: string): void {
     const inst = this.instances.find((i) => i.id === instanceId);
-    if (!inst || inst.status !== 'borrowed') return;
+    if (!inst) return;
+    if (inst.status !== 'borrowed') {
+      console.warn(
+        `[react-native-instant-webview] Attempted to release instance "${instanceId}" which is in "${inst.status}" state, not "borrowed". Ignoring.`,
+      );
+      return;
+    }
 
     inst.warmedUrl = null;
 

@@ -374,5 +374,43 @@ describe('WebViewManager', () => {
       expect(config.poolSize).toBe(5);
       expect(config.cleanupOnReturn).toBe(false);
     });
+
+    it('should warn on poolSize <= 0 and default to 1', () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 0 });
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[react-native-instant-webview]'),
+      );
+      expect(mgr.getState().instances).toHaveLength(1);
+      consoleSpy.mockRestore();
+    });
+
+    it('should warn on negative poolSize and default to 1', () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: -5 });
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('poolSize must be greater than 0'),
+      );
+      expect(mgr.getState().instances).toHaveLength(1);
+      consoleSpy.mockRestore();
+    });
+
+    it('should warn when releasing non-borrowed instance', () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 2 });
+
+      // Try to release an idle instance
+      mgr.release('webview-pool-0');
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Attempted to release'),
+      );
+      consoleSpy.mockRestore();
+    });
   });
 });
