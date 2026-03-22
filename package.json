@@ -14,7 +14,10 @@
     "android",
     "react-native-instant-webview.podspec",
     "react-native.config.js",
-    "!**/__tests__"
+    "README.md",
+    "CONTRIBUTING.md",
+    "!**/__tests__",
+    "!**/__mocks__"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
