@@ -1,3 +1,7 @@
+[![CI](https://github.com/wooBottle/react-native-instant-webview/actions/workflows/ci.yml/badge.svg)](https://github.com/wooBottle/react-native-instant-webview/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/react-native-instant-webview.svg)](https://www.npmjs.com/package/react-native-instant-webview)
+[![license](https://img.shields.io/npm/l/react-native-instant-webview.svg)](https://github.com/wooBottle/react-native-instant-webview/blob/main/LICENSE)
+
 # react-native-instant-webview
 
 WebView pooling library for React Native. Keeps WebView instances alive across screen transitions so users never see a loading spinner twice.
@@ -17,6 +21,15 @@ WebView pooling library for React Native. Keeps WebView instances alive across s
 ```
 
 WebView instances live at the Provider root with absolute positioning. When a `PooledWebView` mounts, it borrows an idle instance and positions it over the placeholder using `measureInWindow`. On unmount, the instance is cleaned up and returned to the pool — the underlying WKWebView/Android WebView is never destroyed.
+
+## Why?
+
+| | Normal WebView | PooledWebView |
+|---|---|---|
+| First load | ~500-1500ms | ~500-1500ms |
+| Subsequent loads | ~500-1500ms | **~0ms** |
+| Memory | Created/destroyed each time | Reused from pool |
+| Screen transitions | Loading spinner every time | Instant content |
 
 ## Installation
 
@@ -164,6 +177,21 @@ npm run typecheck    # TypeScript check
 npm test             # Run tests (20 tests)
 npm run build        # Build with react-native-builder-bob
 ```
+
+## Troubleshooting
+
+### Pool exhausted warning
+Increase `poolSize` in your `WebViewPoolProvider` config, or ensure you're releasing instances properly (e.g., unmounting `PooledWebView` components).
+
+### WebView shows blank content
+Check that the `source` prop is provided. The pool uses blank HTML internally for idle instances.
+
+### Layout issues
+Ensure the parent View of `PooledWebView` has explicit dimensions (e.g., `flex: 1`).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ## License
 
