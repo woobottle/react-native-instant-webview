@@ -84,3 +84,5 @@ export interface UsePooledWebViewReturn {
 }
 
 export type PoolListener = (state: PoolState) => void;
+
+export type PooledWebViewRef = WebView;
