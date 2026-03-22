@@ -325,4 +325,54 @@ describe('WebViewManager', () => {
       expect(listener).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('edge cases', () => {
+    it('should handle release of non-existent instance', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 2 });
+      mgr.release('non-existent-id');
+      expect(mgr.getState().availableCount).toBe(2);
+    });
+
+    it('should handle markIdle of non-existent instance', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 2 });
+      mgr.markIdle('non-existent-id');
+      expect(mgr.getState().availableCount).toBe(2);
+    });
+
+    it('should handle cancelWarmUp for non-warming URL', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 2 });
+      mgr.cancelWarmUp('https://not-warming.com');
+      expect(mgr.getState().availableCount).toBe(2);
+    });
+
+    it('should handle borrow after all instances exhausted and released', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 1, cleanupOnReturn: false });
+      const r1 = mgr.borrow('user-1')!;
+      expect(mgr.borrow('user-2')).toBeNull();
+      mgr.release(r1.instanceId);
+      const r2 = mgr.borrow('user-3');
+      expect(r2).not.toBeNull();
+    });
+
+    it('should handle double release gracefully', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 2 });
+      const result = mgr.borrow('user-1')!;
+      mgr.release(result.instanceId);
+      mgr.release(result.instanceId);
+      expect(mgr.getState().borrowedCount).toBe(0);
+    });
+
+    it('should return correct config', () => {
+      const mgr = WebViewManager.getInstance();
+      mgr.initialize({ poolSize: 5, cleanupOnReturn: false });
+      const config = mgr.getConfig();
+      expect(config.poolSize).toBe(5);
+      expect(config.cleanupOnReturn).toBe(false);
+    });
+  });
 });
