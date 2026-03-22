@@ -103,6 +103,21 @@
     "moduleNameMapper": {
       "^react-native$": "<rootDir>/src/__mocks__/react-native.ts",
       "^react-native-webview$": "<rootDir>/src/__mocks__/react-native-webview.tsx"
+    },
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/__tests__/**",
+      "!src/**/__mocks__/**",
+      "!src/index.tsx",
+      "!src/NativeInstantWebView.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "lines": 80,
+        "branches": 70,
+        "functions": 80,
+        "statements": 80
+      }
     }
   }
 }
