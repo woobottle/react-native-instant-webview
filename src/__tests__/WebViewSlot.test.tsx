@@ -186,6 +186,98 @@ describe('WebViewSlot', () => {
     });
   });
 
+  it('should inject cleanup script and call onCleanupComplete when transitioning to cleaning', () => {
+    jest.useFakeTimers();
+    // Use a shared ref so the WebView mock's useImperativeHandle populates it
+    const webViewRef = React.createRef<any>();
+    const instance = makeInstance({ status: 'borrowed', borrowerId: 'b1', webViewRef: webViewRef as any });
+    const onCleanupComplete = jest.fn();
+    let renderer: ReactTestRenderer;
+
+    act(() => {
+      renderer = create(
+        <WebViewSlot
+          instance={instance}
+          layout={LAYOUT}
+          instanceProps={{ source: { uri: 'https://example.com' } }}
+          config={DEFAULT_CONFIG}
+          onCleanupComplete={onCleanupComplete}
+        />,
+      );
+    });
+
+    // The ref should now be populated by the mock WebView's useImperativeHandle
+    expect(webViewRef.current).toBeTruthy();
+    const injectSpy = webViewRef.current!.injectJavaScript;
+
+    // Transition to cleaning
+    const cleaningInstance = makeInstance({ status: 'cleaning', webViewRef: webViewRef as any });
+    act(() => {
+      renderer!.update(
+        <WebViewSlot
+          instance={cleaningInstance}
+          layout={null}
+          instanceProps={undefined}
+          config={DEFAULT_CONFIG}
+          onCleanupComplete={onCleanupComplete}
+        />,
+      );
+    });
+
+    expect(injectSpy).toHaveBeenCalled();
+
+    // Advance timer to trigger onCleanupComplete
+    act(() => {
+      jest.advanceTimersByTime(150);
+    });
+
+    expect(onCleanupComplete).toHaveBeenCalledWith('webview-pool-0');
+    jest.useRealTimers();
+  });
+
+  it('should use customCleanupScript when provided', () => {
+    jest.useFakeTimers();
+    const webViewRef = React.createRef<any>();
+    const instance = makeInstance({ status: 'borrowed', borrowerId: 'b1', webViewRef: webViewRef as any });
+    const customConfig: PoolConfig = {
+      ...DEFAULT_CONFIG,
+      customCleanupScript: 'customCleanup();',
+    };
+    let renderer: ReactTestRenderer;
+
+    act(() => {
+      renderer = create(
+        <WebViewSlot
+          instance={instance}
+          layout={LAYOUT}
+          instanceProps={{ source: { uri: 'https://example.com' } }}
+          config={customConfig}
+          onCleanupComplete={jest.fn()}
+        />,
+      );
+    });
+
+    // Clear any calls from render
+    const injectSpy = webViewRef.current!.injectJavaScript;
+    injectSpy.mockClear();
+
+    const cleaningInstance = makeInstance({ status: 'cleaning', webViewRef: webViewRef as any });
+    act(() => {
+      renderer!.update(
+        <WebViewSlot
+          instance={cleaningInstance}
+          layout={null}
+          instanceProps={undefined}
+          config={customConfig}
+          onCleanupComplete={jest.fn()}
+        />,
+      );
+    });
+
+    expect(injectSpy).toHaveBeenCalledWith('customCleanup();');
+    jest.useRealTimers();
+  });
+
   it('should let instanceProps override defaultWebViewProps', () => {
     const instance = makeInstance({ status: 'borrowed', borrowerId: 'b1' });
     const configWithDefaults: PoolConfig = {

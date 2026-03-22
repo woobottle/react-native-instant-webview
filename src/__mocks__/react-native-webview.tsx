@@ -1,7 +1,16 @@
 import React from 'react';
 
+const injectJavaScriptMock = jest.fn();
+
 const WebView = React.forwardRef((props: any, ref: any) => {
-  return React.createElement('WebView', { ...props, testID: props.testID ?? 'mock-webview', ref });
+  React.useImperativeHandle(ref, () => ({
+    injectJavaScript: injectJavaScriptMock,
+    reload: jest.fn(),
+    goBack: jest.fn(),
+    goForward: jest.fn(),
+    stopLoading: jest.fn(),
+  }));
+  return React.createElement('WebView', { ...props, testID: props.testID ?? 'mock-webview' });
 });
 WebView.displayName = 'WebView';
 

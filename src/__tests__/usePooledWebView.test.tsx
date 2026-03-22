@@ -142,6 +142,51 @@ describe('usePooledWebView', () => {
     expect(state.borrowedCount).toBe(0);
   });
 
+  it('should release a borrowed instance manually', () => {
+    let hookValue: UsePooledWebViewReturn | undefined;
+
+    act(() => {
+      create(
+        <WebViewPoolProvider config={{ poolSize: 2, cleanupOnReturn: false }}>
+          <HookConsumer onHook={(h) => { hookValue = h; }} />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    act(() => {
+      hookValue!.borrow();
+    });
+
+    expect(hookValue!.instanceId).not.toBeNull();
+
+    act(() => {
+      hookValue!.release();
+    });
+
+    // After release, the manager should reflect no borrowed instances
+    const mgr = WebViewManager.getInstance();
+    expect(mgr.getState().borrowedCount).toBe(0);
+  });
+
+  it('should be a no-op when releasing without borrowing', () => {
+    let hookValue: UsePooledWebViewReturn | undefined;
+
+    act(() => {
+      create(
+        <WebViewPoolProvider config={{ poolSize: 2 }}>
+          <HookConsumer onHook={(h) => { hookValue = h; }} />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    // Should not throw when releasing without borrowing
+    act(() => {
+      hookValue!.release();
+    });
+
+    expect(hookValue!.instanceId).toBeNull();
+  });
+
   it('should return same instance on duplicate borrow (not consuming a second slot)', () => {
     let hookValue: UsePooledWebViewReturn | undefined;
 

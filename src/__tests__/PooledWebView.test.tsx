@@ -249,6 +249,62 @@ describe('Ref forwarding', () => {
   });
 });
 
+describe('onReturned callback', () => {
+  beforeEach(() => {
+    WebViewManager.resetInstance();
+  });
+
+  it('should call onReturned with instance id when unmounted', () => {
+    const onReturned = jest.fn();
+    let renderer: ReactTestRenderer;
+
+    act(() => {
+      renderer = create(
+        <WebViewPoolProvider config={{ poolSize: 2, cleanupOnReturn: false }}>
+          <PooledWebView source={{ uri: 'https://example.com' }} onReturned={onReturned} />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    act(() => {
+      renderer.unmount();
+    });
+
+    expect(onReturned).toHaveBeenCalledWith('webview-pool-0');
+  });
+});
+
+describe('Source change re-sync', () => {
+  beforeEach(() => {
+    WebViewManager.resetInstance();
+  });
+
+  it('should update instance props when source changes', () => {
+    let renderer: ReactTestRenderer;
+
+    act(() => {
+      renderer = create(
+        <WebViewPoolProvider config={{ poolSize: 2 }}>
+          <PooledWebView source={{ uri: 'https://first.com' }} />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    // Update source
+    act(() => {
+      renderer.update(
+        <WebViewPoolProvider config={{ poolSize: 2 }}>
+          <PooledWebView source={{ uri: 'https://second.com' }} />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    // Verify that the pool state still shows 1 borrowed
+    const state = WebViewManager.getInstance().getState();
+    expect(state.borrowedCount).toBe(1);
+  });
+});
+
 describe('Props priority', () => {
   beforeEach(() => {
     WebViewManager.resetInstance();

@@ -110,6 +110,73 @@ describe('WebViewPoolProvider', () => {
     expect(ctxValue!.state.availableCount).toBe(3);
   });
 
+  it('should get/set instance layout and props', () => {
+    let ctxValue: WebViewPoolContextValue | undefined;
+
+    act(() => {
+      create(
+        <WebViewPoolProvider config={{ poolSize: 2 }}>
+          <ContextConsumer onContext={(ctx) => { ctxValue = ctx; }} />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    // Borrow an instance first
+    let borrowResult: any;
+    act(() => {
+      borrowResult = ctxValue!.borrow('test-borrower');
+    });
+
+    const instanceId = borrowResult!.instanceId;
+
+    // Set and get layout
+    act(() => {
+      ctxValue!.setInstanceLayout(instanceId, { top: 10, left: 20, width: 100, height: 200 });
+    });
+
+    expect(ctxValue!.getInstanceLayout(instanceId)).toEqual({
+      top: 10, left: 20, width: 100, height: 200,
+    });
+
+    // Set and get props
+    act(() => {
+      ctxValue!.setInstanceProps(instanceId, { source: { uri: 'https://test.com' } });
+    });
+
+    expect(ctxValue!.getInstanceProps(instanceId)).toEqual({
+      source: { uri: 'https://test.com' },
+    });
+
+    // Get layout/props for non-existent instance
+    expect(ctxValue!.getInstanceLayout('non-existent')).toBeNull();
+    expect(ctxValue!.getInstanceProps('non-existent')).toBeUndefined();
+  });
+
+  it('should get WebView ref for an instance', () => {
+    let ctxValue: WebViewPoolContextValue | undefined;
+
+    act(() => {
+      create(
+        <WebViewPoolProvider config={{ poolSize: 2 }}>
+          <ContextConsumer onContext={(ctx) => { ctxValue = ctx; }} />
+        </WebViewPoolProvider>,
+      );
+    });
+
+    // getWebViewRef for non-existent returns null
+    expect(ctxValue!.getWebViewRef('non-existent')).toBeNull();
+
+    // Borrow and check ref (will be null in test env but should not throw)
+    let borrowResult: any;
+    act(() => {
+      borrowResult = ctxValue!.borrow('test-borrower');
+    });
+
+    const ref = ctxValue!.getWebViewRef(borrowResult!.instanceId);
+    // In test environment, the ref.current will be null
+    expect(ref).toBeNull();
+  });
+
   it('should cancel warm-ups on unmount', () => {
     let ctxValue: WebViewPoolContextValue | undefined;
     let renderer: ReactTestRenderer;
