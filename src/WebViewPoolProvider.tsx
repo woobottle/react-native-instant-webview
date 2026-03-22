@@ -1,4 +1,12 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { View, StyleSheet } from 'react-native';
 import type { WebView, WebViewProps } from 'react-native-webview';
 import { DEFAULT_POOL_CONFIG } from './constants';
@@ -25,10 +33,7 @@ export function useWebViewPool(): WebViewPoolContextValue {
   return ctx;
 }
 
-export const WebViewPoolProvider: React.FC<WebViewPoolProviderProps> = ({
-  config,
-  children,
-}) => {
+export const WebViewPoolProvider: React.FC<WebViewPoolProviderProps> = ({ config, children }) => {
   const managerRef = useRef(WebViewManager.getInstance());
   const mergedConfig = useRef<PoolConfig>({
     ...DEFAULT_POOL_CONFIG,
@@ -57,12 +62,9 @@ export const WebViewPoolProvider: React.FC<WebViewPoolProviderProps> = ({
     };
   }, []);
 
-  const borrow = useCallback(
-    (borrowerId: string, url?: string): BorrowResult | null => {
-      return managerRef.current.borrow(borrowerId, url);
-    },
-    [],
-  );
+  const borrow = useCallback((borrowerId: string, url?: string): BorrowResult | null => {
+    return managerRef.current.borrow(borrowerId, url);
+  }, []);
 
   const release = useCallback((instanceId: string): void => {
     layoutsRef.current.delete(instanceId);
@@ -78,44 +80,27 @@ export const WebViewPoolProvider: React.FC<WebViewPoolProviderProps> = ({
     [],
   );
 
-  const setInstanceProps = useCallback(
-    (instanceId: string, props: Partial<WebViewProps>): void => {
-      propsRef.current.set(instanceId, props);
-      forceRender((c) => c + 1);
-    },
-    [],
-  );
+  const setInstanceProps = useCallback((instanceId: string, props: Partial<WebViewProps>): void => {
+    propsRef.current.set(instanceId, props);
+    forceRender((c) => c + 1);
+  }, []);
 
-  const getInstanceLayout = useCallback(
-    (instanceId: string): InstanceLayout | null => {
-      return layoutsRef.current.get(instanceId) ?? null;
-    },
-    [],
-  );
+  const getInstanceLayout = useCallback((instanceId: string): InstanceLayout | null => {
+    return layoutsRef.current.get(instanceId) ?? null;
+  }, []);
 
-  const getInstanceProps = useCallback(
-    (instanceId: string): Partial<WebViewProps> | undefined => {
-      return propsRef.current.get(instanceId);
-    },
-    [],
-  );
+  const getInstanceProps = useCallback((instanceId: string): Partial<WebViewProps> | undefined => {
+    return propsRef.current.get(instanceId);
+  }, []);
 
-  const getWebViewRef = useCallback(
-    (instanceId: string): WebView | null => {
-      const inst = managerRef.current
-        .getState()
-        .instances.find((i) => i.id === instanceId);
-      return inst?.webViewRef.current ?? null;
-    },
-    [],
-  );
+  const getWebViewRef = useCallback((instanceId: string): WebView | null => {
+    const inst = managerRef.current.getState().instances.find((i) => i.id === instanceId);
+    return inst?.webViewRef.current ?? null;
+  }, []);
 
-  const warmUp = useCallback(
-    (url: string, options?: WarmUpOptions): WarmUpHandle | null => {
-      return managerRef.current.warmUp(url, options);
-    },
-    [],
-  );
+  const warmUp = useCallback((url: string, options?: WarmUpOptions): WarmUpHandle | null => {
+    return managerRef.current.warmUp(url, options);
+  }, []);
 
   const cancelWarmUp = useCallback((url: string): void => {
     managerRef.current.cancelWarmUp(url);

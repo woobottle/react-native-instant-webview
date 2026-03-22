@@ -34,10 +34,7 @@ const WebViewSlot: React.FC<WebViewSlotProps> = ({
   const [hasWebView, setHasWebView] = useState(false);
 
   useEffect(() => {
-    if (
-      (instance.status === 'borrowed' || instance.status === 'warming') &&
-      !hasWebView
-    ) {
+    if ((instance.status === 'borrowed' || instance.status === 'warming') && !hasWebView) {
       setHasWebView(true);
     }
   }, [instance.status, hasWebView]);
@@ -46,15 +43,11 @@ const WebViewSlot: React.FC<WebViewSlotProps> = ({
   useEffect(() => {
     if (!hasNativeModule || !hasWebView) return;
 
-    const isDetached =
-      instance.status === 'idle' || instance.status === 'cleaning';
+    const isDetached = instance.status === 'idle' || instance.status === 'cleaning';
 
     if (isDetached) {
       detachView(instance.webViewRef);
-    } else if (
-      instance.status === 'borrowed' ||
-      instance.status === 'warming'
-    ) {
+    } else if (instance.status === 'borrowed' || instance.status === 'warming') {
       attachView(instance.webViewRef, slotContainerRef);
     }
   }, [instance.status, instance.webViewRef, hasWebView]);
@@ -73,7 +66,13 @@ const WebViewSlot: React.FC<WebViewSlotProps> = ({
       return () => clearTimeout(timer);
     }
     prevStatusRef.current = instance.status;
-  }, [instance.status, instance.id, instance.webViewRef, config.customCleanupScript, onCleanupComplete]);
+  }, [
+    instance.status,
+    instance.id,
+    instance.webViewRef,
+    config.customCleanupScript,
+    onCleanupComplete,
+  ]);
 
   const containerStyle = useMemo<ViewStyle>(() => {
     if (!isVisible || !layout) {
@@ -104,21 +103,14 @@ const WebViewSlot: React.FC<WebViewSlotProps> = ({
   const shouldRenderWebView = hasWebView;
 
   return (
-    <View
-      ref={slotContainerRef}
-      style={containerStyle}
-      pointerEvents={isVisible ? 'auto' : 'none'}
-    >
+    <View ref={slotContainerRef} style={containerStyle} pointerEvents={isVisible ? 'auto' : 'none'}>
       {shouldRenderWebView && (
         <WebView
           ref={instance.webViewRef as React.RefObject<WebView>}
           {...(config.defaultWebViewProps || {})}
           {...(instance.status === 'borrowed' ? instanceProps : undefined)}
           source={source}
-          style={[
-            { flex: 1 },
-            instance.status === 'borrowed' ? instanceProps?.style : undefined,
-          ]}
+          style={[{ flex: 1 }, instance.status === 'borrowed' ? instanceProps?.style : undefined]}
         />
       )}
     </View>

@@ -91,9 +91,7 @@ describe('WebViewManager', () => {
       const result = mgr.borrow('user-1')!;
       mgr.release(result.instanceId);
 
-      const inst = mgr
-        .getState()
-        .instances.find((i) => i.id === result.instanceId);
+      const inst = mgr.getState().instances.find((i) => i.id === result.instanceId);
       expect(inst!.status).toBe('cleaning');
     });
 
@@ -104,9 +102,7 @@ describe('WebViewManager', () => {
       const result = mgr.borrow('user-1')!;
       mgr.release(result.instanceId);
 
-      const inst = mgr
-        .getState()
-        .instances.find((i) => i.id === result.instanceId);
+      const inst = mgr.getState().instances.find((i) => i.id === result.instanceId);
       expect(inst!.status).toBe('idle');
     });
 
@@ -129,9 +125,7 @@ describe('WebViewManager', () => {
       mgr.release(result.instanceId);
       mgr.markIdle(result.instanceId);
 
-      const inst = mgr
-        .getState()
-        .instances.find((i) => i.id === result.instanceId);
+      const inst = mgr.getState().instances.find((i) => i.id === result.instanceId);
       expect(inst!.status).toBe('idle');
       expect(inst!.borrowerId).toBeNull();
       expect(inst!.borrowedAt).toBeNull();
@@ -161,9 +155,7 @@ describe('WebViewManager', () => {
       expect(handle).not.toBeNull();
       expect(handle!.url).toBe('https://example.com');
 
-      const inst = mgr
-        .getState()
-        .instances.find((i) => i.id === handle!.instanceId);
+      const inst = mgr.getState().instances.find((i) => i.id === handle!.instanceId);
       expect(inst!.status).toBe('warming');
       expect(inst!.warmedUrl).toBe('https://example.com');
     });
@@ -212,9 +204,7 @@ describe('WebViewManager', () => {
 
       jest.advanceTimersByTime(5000);
 
-      const inst = mgr
-        .getState()
-        .instances.find((i) => i.id === handle!.instanceId);
+      const inst = mgr.getState().instances.find((i) => i.id === handle!.instanceId);
       expect(inst!.status).toBe('cleaning');
       expect(inst!.warmedUrl).toBeNull();
 
@@ -228,9 +218,7 @@ describe('WebViewManager', () => {
       const handle = mgr.warmUp('https://example.com');
       handle!.cancel();
 
-      const inst = mgr
-        .getState()
-        .instances.find((i) => i.id === handle!.instanceId);
+      const inst = mgr.getState().instances.find((i) => i.id === handle!.instanceId);
       expect(inst!.status).toBe('cleaning');
     });
 
@@ -241,9 +229,7 @@ describe('WebViewManager', () => {
       const handle = mgr.warmUp('https://example.com');
       mgr.cancelWarmUp('https://example.com');
 
-      const inst = mgr
-        .getState()
-        .instances.find((i) => i.id === handle!.instanceId);
+      const inst = mgr.getState().instances.find((i) => i.id === handle!.instanceId);
       expect(inst!.status).toBe('idle');
       expect(inst!.warmedUrl).toBeNull();
     });
@@ -260,9 +246,7 @@ describe('WebViewManager', () => {
       expect(result).not.toBeNull();
       expect(result!.instanceId).toBe(warmHandle!.instanceId);
 
-      const inst = mgr
-        .getState()
-        .instances.find((i) => i.id === result!.instanceId);
+      const inst = mgr.getState().instances.find((i) => i.id === result!.instanceId);
       expect(inst!.status).toBe('borrowed');
     });
 
@@ -275,9 +259,7 @@ describe('WebViewManager', () => {
 
       expect(result).not.toBeNull();
       // Should pick a different idle instance, not the warming one
-      const warmingInst = mgr
-        .getState()
-        .instances.find((i) => i.status === 'warming');
+      const warmingInst = mgr.getState().instances.find((i) => i.status === 'warming');
       expect(warmingInst).toBeDefined();
     });
 
@@ -290,9 +272,7 @@ describe('WebViewManager', () => {
 
       expect(result).not.toBeNull();
       // Warming instance should remain warming
-      const warmingInst = mgr
-        .getState()
-        .instances.find((i) => i.status === 'warming');
+      const warmingInst = mgr.getState().instances.find((i) => i.status === 'warming');
       expect(warmingInst).toBeDefined();
     });
 
@@ -303,9 +283,7 @@ describe('WebViewManager', () => {
       mgr.warmUp('https://example.com');
       const result = mgr.borrow('user-1', 'https://example.com');
 
-      const inst = mgr
-        .getState()
-        .instances.find((i) => i.id === result!.instanceId);
+      const inst = mgr.getState().instances.find((i) => i.id === result!.instanceId);
       expect(inst!.warmedUrl).toBe('https://example.com');
     });
 
@@ -317,9 +295,7 @@ describe('WebViewManager', () => {
       const result = mgr.borrow('user-1', 'https://example.com')!;
       mgr.release(result.instanceId);
 
-      const inst = mgr
-        .getState()
-        .instances.find((i) => i.id === result.instanceId);
+      const inst = mgr.getState().instances.find((i) => i.id === result.instanceId);
       expect(inst!.warmedUrl).toBeNull();
     });
   });
@@ -333,9 +309,7 @@ describe('WebViewManager', () => {
       mgr.initialize({ poolSize: 2 });
 
       expect(listener).toHaveBeenCalledTimes(1);
-      expect(listener).toHaveBeenCalledWith(
-        expect.objectContaining({ initialized: true }),
-      );
+      expect(listener).toHaveBeenCalledWith(expect.objectContaining({ initialized: true }));
     });
 
     it('should unsubscribe correctly', () => {

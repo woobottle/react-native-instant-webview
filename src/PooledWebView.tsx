@@ -9,15 +9,7 @@ let borrowerIdCounter = 0;
 
 const PooledWebView = React.forwardRef<WebView, PooledWebViewProps>(
   (
-    {
-      poolKey,
-      containerStyle,
-      onPoolExhausted,
-      onBorrowed,
-      onReturned,
-      source,
-      ...webViewProps
-    },
+    { poolKey, containerStyle, onPoolExhausted, onBorrowed, onReturned, source, ...webViewProps },
     ref,
   ) => {
     const pool = useWebViewPool();
@@ -33,25 +25,19 @@ const PooledWebView = React.forwardRef<WebView, PooledWebViewProps>(
     // Keep propsRef in sync without triggering re-renders
     propsRef.current = { source, ...webViewProps };
 
-    useImperativeHandle(
-      ref,
-      () => {
-        if (fallback) {
-          return localFallbackRef.current as WebView;
-        }
-        const id = instanceIdRef.current;
-        if (!id) return null as unknown as WebView;
-        return pool.getWebViewRef(id) as WebView;
-      },
-      [fallback, borrowed, pool],
-    );
+    useImperativeHandle(ref, () => {
+      if (fallback) {
+        return localFallbackRef.current as WebView;
+      }
+      const id = instanceIdRef.current;
+      if (!id) return null as unknown as WebView;
+      return pool.getWebViewRef(id) as WebView;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fallback, borrowed, pool]);
 
     // Borrow on mount
     useEffect(() => {
-      const sourceUri =
-        source && 'uri' in source
-          ? (source as { uri: string }).uri
-          : undefined;
+      const sourceUri = source && 'uri' in source ? (source as { uri: string }).uri : undefined;
       const result = pool.borrow(borrowerIdRef.current, sourceUri);
       if (!result) {
         setFallback(true);
@@ -110,22 +96,13 @@ const PooledWebView = React.forwardRef<WebView, PooledWebViewProps>(
     if (fallback) {
       return (
         <View style={[{ flex: 1 }, containerStyle]}>
-          <WebView
-            ref={localFallbackRef}
-            source={source}
-            {...webViewProps}
-            style={{ flex: 1 }}
-          />
+          <WebView ref={localFallbackRef} source={source} {...webViewProps} style={{ flex: 1 }} />
         </View>
       );
     }
 
     return (
-      <View
-        ref={placeholderRef}
-        style={[{ flex: 1 }, containerStyle]}
-        onLayout={handleLayout}
-      />
+      <View ref={placeholderRef} style={[{ flex: 1 }, containerStyle]} onLayout={handleLayout} />
     );
   },
 );

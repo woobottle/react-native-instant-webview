@@ -204,8 +204,7 @@ class WebViewManager {
     return {
       instances: [...this.instances],
       availableCount: this.instances.filter((i) => i.status === 'idle').length,
-      borrowedCount: this.instances.filter((i) => i.status === 'borrowed')
-        .length,
+      borrowedCount: this.instances.filter((i) => i.status === 'borrowed').length,
       initialized: this.initialized,
     };
   }

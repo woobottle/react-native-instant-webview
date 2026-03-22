@@ -24,5 +24,7 @@ const TurboModuleRegistry = {
 
 export { View, StyleSheet, NativeModules, findNodeHandle, TurboModuleRegistry };
 export type ViewStyle = Record<string, any>;
-export type LayoutChangeEvent = { nativeEvent: { layout: { x: number; y: number; width: number; height: number } } };
+export type LayoutChangeEvent = {
+  nativeEvent: { layout: { x: number; y: number; width: number; height: number } };
+};
 export type TurboModule = {};

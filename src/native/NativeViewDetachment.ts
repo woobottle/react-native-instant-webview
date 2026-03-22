@@ -12,10 +12,7 @@ export function detachView(ref: RefObject<any>): void {
   }
 }
 
-export function attachView(
-  ref: RefObject<any>,
-  parentRef: RefObject<any>,
-): void {
+export function attachView(ref: RefObject<any>, parentRef: RefObject<any>): void {
   const tag = findNodeHandle(ref.current);
   const parentTag = findNodeHandle(parentRef.current);
   if (tag && parentTag && NativeModule) {

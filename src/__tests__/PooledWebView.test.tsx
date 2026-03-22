@@ -15,7 +15,12 @@ jest.mock('react-native', () => {
     StyleSheet: { create: (s: any) => s },
     NativeModules: {},
     findNodeHandle: () => null,
-    TurboModuleRegistry: { get: () => null, getEnforcing: () => { throw new Error(); } },
+    TurboModuleRegistry: {
+      get: () => null,
+      getEnforcing: () => {
+        throw new Error();
+      },
+    },
   };
 });
 
@@ -76,10 +81,7 @@ describe('PooledWebView integration', () => {
       renderer = create(
         <WebViewPoolProvider config={{ poolSize: 1 }}>
           <PooledWebView source={{ uri: 'https://a.com' }} />
-          <PooledWebView
-            source={{ uri: 'https://b.com' }}
-            onPoolExhausted={onPoolExhausted}
-          />
+          <PooledWebView source={{ uri: 'https://b.com' }} onPoolExhausted={onPoolExhausted} />
         </WebViewPoolProvider>,
       );
     });
@@ -99,10 +101,7 @@ describe('PooledWebView integration', () => {
     act(() => {
       create(
         <WebViewPoolProvider config={{ poolSize: 2 }}>
-          <PooledWebView
-            source={{ uri: 'https://example.com' }}
-            onBorrowed={onBorrowed}
-          />
+          <PooledWebView source={{ uri: 'https://example.com' }} onBorrowed={onBorrowed} />
         </WebViewPoolProvider>,
       );
     });
@@ -204,9 +203,7 @@ describe('Warm-up integration', () => {
     const state = WebViewManager.getInstance().getState();
     expect(state.borrowedCount).toBe(1);
     // warming instance + 1 idle
-    const warmingCount = state.instances.filter(
-      (i) => i.status === 'warming',
-    ).length;
+    const warmingCount = state.instances.filter((i) => i.status === 'warming').length;
     expect(warmingCount).toBe(1);
     expect(state.availableCount).toBe(1);
   });
@@ -219,15 +216,11 @@ describe('Ref forwarding', () => {
 
   it('should expose WebView ref via forwardRef', () => {
     const ref = React.createRef<any>();
-    let renderer: ReactTestRenderer;
 
     act(() => {
-      renderer = create(
+      create(
         <WebViewPoolProvider config={{ poolSize: 2 }}>
-          <PooledWebView
-            ref={ref}
-            source={{ uri: 'https://example.com' }}
-          />
+          <PooledWebView ref={ref} source={{ uri: 'https://example.com' }} />
         </WebViewPoolProvider>,
       );
     });
@@ -245,14 +238,8 @@ describe('Ref forwarding', () => {
     act(() => {
       create(
         <WebViewPoolProvider config={{ poolSize: 1 }}>
-          <PooledWebView
-            ref={ref1}
-            source={{ uri: 'https://a.com' }}
-          />
-          <PooledWebView
-            ref={ref2}
-            source={{ uri: 'https://b.com' }}
-          />
+          <PooledWebView ref={ref1} source={{ uri: 'https://a.com' }} />
+          <PooledWebView ref={ref2} source={{ uri: 'https://b.com' }} />
         </WebViewPoolProvider>,
       );
     });
@@ -279,10 +266,7 @@ describe('Props priority', () => {
             defaultWebViewProps: { javaScriptEnabled: false },
           }}
         >
-          <PooledWebView
-            source={{ uri: 'https://example.com' }}
-            javaScriptEnabled={true}
-          />
+          <PooledWebView source={{ uri: 'https://example.com' }} javaScriptEnabled={true} />
         </WebViewPoolProvider>,
       );
     });

@@ -64,9 +64,7 @@ describe('useWarmUp', () => {
 
     const state = WebViewManager.getInstance().getState();
     // With cleanupOnReturn=false, cancel should set it back to idle directly
-    const warmingCount = state.instances.filter(
-      (i) => i.status === 'warming',
-    ).length;
+    const warmingCount = state.instances.filter((i) => i.status === 'warming').length;
     expect(warmingCount).toBe(0);
     expect(state.availableCount).toBe(2);
   });
