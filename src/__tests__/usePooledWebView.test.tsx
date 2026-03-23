@@ -52,7 +52,11 @@ describe('usePooledWebView', () => {
     act(() => {
       create(
         <WebViewPoolProvider config={{ poolSize: 2 }}>
-          <HookConsumer onHook={(h) => { hookValue = h; }} />
+          <HookConsumer
+            onHook={(h) => {
+              hookValue = h;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });
@@ -71,7 +75,11 @@ describe('usePooledWebView', () => {
     act(() => {
       create(
         <WebViewPoolProvider config={{ poolSize: 2 }}>
-          <HookConsumer onHook={(h) => { hookValue = h; }} />
+          <HookConsumer
+            onHook={(h) => {
+              hookValue = h;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });
@@ -93,8 +101,16 @@ describe('usePooledWebView', () => {
     act(() => {
       create(
         <WebViewPoolProvider config={{ poolSize: 1 }}>
-          <HookConsumer onHook={(h) => { hook1 = h; }} />
-          <HookConsumer onHook={(h) => { hook2 = h; }} />
+          <HookConsumer
+            onHook={(h) => {
+              hook1 = h;
+            }}
+          />
+          <HookConsumer
+            onHook={(h) => {
+              hook2 = h;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });
@@ -119,7 +135,11 @@ describe('usePooledWebView', () => {
     act(() => {
       renderer = create(
         <WebViewPoolProvider config={{ poolSize: 2, cleanupOnReturn: false }}>
-          <HookConsumer onHook={(h) => { hookValue = h; }} />
+          <HookConsumer
+            onHook={(h) => {
+              hookValue = h;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });
@@ -148,7 +168,11 @@ describe('usePooledWebView', () => {
     act(() => {
       create(
         <WebViewPoolProvider config={{ poolSize: 2, cleanupOnReturn: false }}>
-          <HookConsumer onHook={(h) => { hookValue = h; }} />
+          <HookConsumer
+            onHook={(h) => {
+              hookValue = h;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });
@@ -174,7 +198,11 @@ describe('usePooledWebView', () => {
     act(() => {
       create(
         <WebViewPoolProvider config={{ poolSize: 2 }}>
-          <HookConsumer onHook={(h) => { hookValue = h; }} />
+          <HookConsumer
+            onHook={(h) => {
+              hookValue = h;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });
@@ -193,7 +221,11 @@ describe('usePooledWebView', () => {
     act(() => {
       create(
         <WebViewPoolProvider config={{ poolSize: 2 }}>
-          <HookConsumer onHook={(h) => { hookValue = h; }} />
+          <HookConsumer
+            onHook={(h) => {
+              hookValue = h;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });

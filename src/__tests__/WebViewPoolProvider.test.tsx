@@ -50,7 +50,11 @@ describe('WebViewPoolProvider', () => {
     act(() => {
       create(
         <WebViewPoolProvider config={{ poolSize: 5 }}>
-          <ContextConsumer onContext={(ctx) => { ctxValue = ctx; }} />
+          <ContextConsumer
+            onContext={(ctx) => {
+              ctxValue = ctx;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });
@@ -68,7 +72,11 @@ describe('WebViewPoolProvider', () => {
     act(() => {
       create(
         <WebViewPoolProvider config={{ poolSize: 2 }}>
-          <ContextConsumer onContext={(ctx) => { ctxValue = ctx; }} />
+          <ContextConsumer
+            onContext={(ctx) => {
+              ctxValue = ctx;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });
@@ -100,7 +108,11 @@ describe('WebViewPoolProvider', () => {
     act(() => {
       create(
         <WebViewPoolProvider>
-          <ContextConsumer onContext={(ctx) => { ctxValue = ctx; }} />
+          <ContextConsumer
+            onContext={(ctx) => {
+              ctxValue = ctx;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });
@@ -116,7 +128,11 @@ describe('WebViewPoolProvider', () => {
     act(() => {
       create(
         <WebViewPoolProvider config={{ poolSize: 2 }}>
-          <ContextConsumer onContext={(ctx) => { ctxValue = ctx; }} />
+          <ContextConsumer
+            onContext={(ctx) => {
+              ctxValue = ctx;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });
@@ -135,7 +151,10 @@ describe('WebViewPoolProvider', () => {
     });
 
     expect(ctxValue!.getInstanceLayout(instanceId)).toEqual({
-      top: 10, left: 20, width: 100, height: 200,
+      top: 10,
+      left: 20,
+      width: 100,
+      height: 200,
     });
 
     // Set and get props
@@ -158,7 +177,11 @@ describe('WebViewPoolProvider', () => {
     act(() => {
       create(
         <WebViewPoolProvider config={{ poolSize: 2 }}>
-          <ContextConsumer onContext={(ctx) => { ctxValue = ctx; }} />
+          <ContextConsumer
+            onContext={(ctx) => {
+              ctxValue = ctx;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });
@@ -184,7 +207,11 @@ describe('WebViewPoolProvider', () => {
     act(() => {
       renderer = create(
         <WebViewPoolProvider config={{ poolSize: 3 }}>
-          <ContextConsumer onContext={(ctx) => { ctxValue = ctx; }} />
+          <ContextConsumer
+            onContext={(ctx) => {
+              ctxValue = ctx;
+            }}
+          />
         </WebViewPoolProvider>,
       );
     });

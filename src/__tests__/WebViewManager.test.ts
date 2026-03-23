@@ -407,9 +407,7 @@ describe('WebViewManager', () => {
       // Try to release an idle instance
       mgr.release('webview-pool-0');
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Attempted to release'),
-      );
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Attempted to release'));
       consoleSpy.mockRestore();
     });
   });

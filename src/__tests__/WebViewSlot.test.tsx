@@ -190,7 +190,11 @@ describe('WebViewSlot', () => {
     jest.useFakeTimers();
     // Use a shared ref so the WebView mock's useImperativeHandle populates it
     const webViewRef = React.createRef<any>();
-    const instance = makeInstance({ status: 'borrowed', borrowerId: 'b1', webViewRef: webViewRef as any });
+    const instance = makeInstance({
+      status: 'borrowed',
+      borrowerId: 'b1',
+      webViewRef: webViewRef as any,
+    });
     const onCleanupComplete = jest.fn();
     let renderer: ReactTestRenderer;
 
@@ -238,7 +242,11 @@ describe('WebViewSlot', () => {
   it('should use customCleanupScript when provided', () => {
     jest.useFakeTimers();
     const webViewRef = React.createRef<any>();
-    const instance = makeInstance({ status: 'borrowed', borrowerId: 'b1', webViewRef: webViewRef as any });
+    const instance = makeInstance({
+      status: 'borrowed',
+      borrowerId: 'b1',
+      webViewRef: webViewRef as any,
+    });
     const customConfig: PoolConfig = {
       ...DEFAULT_CONFIG,
       customCleanupScript: 'customCleanup();',
