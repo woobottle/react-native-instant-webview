@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { BLANK_HTML_SOURCE, CLEANUP_SCRIPT, HIDDEN_STYLE } from './constants';
 import { hasNativeModule, detachView, attachView } from './native/NativeViewDetachment';
@@ -24,6 +24,12 @@ const WebViewSlot: React.FC<WebViewSlotProps> = ({
   const isVisible = instance.status === 'borrowed' && layout != null;
   const prevStatusRef = useRef(instance.status);
   const slotContainerRef = useRef<View>(null);
+  // The WebView is wrapped in this holder View so the native module has a real
+  // host view to detach/reparent. react-native-webview only exposes an imperative
+  // handle (goForward/goBack/reload/...) through its ref, which findNodeHandle
+  // cannot resolve — passing it would throw "Argument appears to not be a
+  // ReactComponent". The holder is a plain View, so findNodeHandle resolves it.
+  const webViewHolderRef = useRef<View>(null);
 
   // Track whether this slot has ever had a WebView rendered.
   // On first borrow (or warm-up) the WebView is created with a valid source,
@@ -46,11 +52,11 @@ const WebViewSlot: React.FC<WebViewSlotProps> = ({
     const isDetached = instance.status === 'idle' || instance.status === 'cleaning';
 
     if (isDetached) {
-      detachView(instance.webViewRef);
+      detachView(webViewHolderRef);
     } else if (instance.status === 'borrowed' || instance.status === 'warming') {
-      attachView(instance.webViewRef, slotContainerRef);
+      attachView(webViewHolderRef, slotContainerRef);
     }
-  }, [instance.status, instance.webViewRef, hasWebView]);
+  }, [instance.status, hasWebView]);
 
   // When entering cleaning state, inject cleanup script then mark idle
   useEffect(() => {
@@ -105,13 +111,15 @@ const WebViewSlot: React.FC<WebViewSlotProps> = ({
   return (
     <View ref={slotContainerRef} style={containerStyle} pointerEvents={isVisible ? 'auto' : 'none'}>
       {shouldRenderWebView && (
-        <WebView
-          ref={instance.webViewRef as React.RefObject<WebView>}
-          {...(config.defaultWebViewProps || {})}
-          {...(instance.status === 'borrowed' ? instanceProps : undefined)}
-          source={source}
-          style={[{ flex: 1 }, instance.status === 'borrowed' ? instanceProps?.style : undefined]}
-        />
+        <View ref={webViewHolderRef} style={StyleSheet.absoluteFill}>
+          <WebView
+            ref={instance.webViewRef as React.RefObject<WebView>}
+            {...(config.defaultWebViewProps || {})}
+            {...(instance.status === 'borrowed' ? instanceProps : undefined)}
+            source={source}
+            style={[{ flex: 1 }, instance.status === 'borrowed' ? instanceProps?.style : undefined]}
+          />
+        </View>
       )}
     </View>
   );
