@@ -7,6 +7,7 @@ View.displayName = 'View';
 
 const StyleSheet = {
   create: (styles: any) => styles,
+  absoluteFill: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },
 };
 
 const NativeModules: Record<string, any> = {};
