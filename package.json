@@ -1,6 +1,6 @@
 {
   "name": "react-native-instant-webview",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Zero-loading WebView pooling for React Native",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -113,7 +113,7 @@
       "!src/**/__mocks__/**",
       "!src/index.tsx",
       "!src/NativeInstantWebView.ts",
-    "!src/native/**"
+      "!src/native/**"
     ],
     "coverageThreshold": {
       "global": {
