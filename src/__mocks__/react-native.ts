@@ -12,6 +12,8 @@ const StyleSheet = {
 
 const NativeModules: Record<string, any> = {};
 
+const Platform = { OS: 'ios' as 'ios' | 'android' };
+
 function findNodeHandle(_ref: any): number | null {
   return null;
 }
@@ -23,7 +25,7 @@ const TurboModuleRegistry = {
   },
 };
 
-export { View, StyleSheet, NativeModules, findNodeHandle, TurboModuleRegistry };
+export { View, StyleSheet, NativeModules, Platform, findNodeHandle, TurboModuleRegistry };
 export type ViewStyle = Record<string, any>;
 export type LayoutChangeEvent = {
   nativeEvent: { layout: { x: number; y: number; width: number; height: number } };

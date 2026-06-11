@@ -1,4 +1,4 @@
-import { NativeModules, findNodeHandle } from 'react-native';
+import { NativeModules, Platform, findNodeHandle } from 'react-native';
 import type { RefObject } from 'react';
 
 const NativeModule = NativeModules.InstantWebView;
@@ -19,7 +19,11 @@ export function isNewArchitecture(): boolean {
   return g.RN$Bridgeless === true || g.nativeFabricUIManager != null;
 }
 
-export const hasNativeModule = NativeModule != null && !isNewArchitecture();
+// The iOS module resolves views via RCTViewRegistry, so it works under the New
+// Architecture. The Android module still relies on the legacy UIManagerModule,
+// so it stays on the JS fallback there until ported.
+export const hasNativeModule =
+  NativeModule != null && (!isNewArchitecture() || Platform.OS === 'ios');
 
 export function detachView(ref: RefObject<any>): void {
   const tag = findNodeHandle(ref.current);
