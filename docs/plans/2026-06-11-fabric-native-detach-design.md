@@ -48,6 +48,17 @@ export const hasNativeModule =
 - JS 유닛: `hasNativeModule` 플랫폼 분기 — iOS 새아키=on, Android 새아키=off, 구아키=on. `Platform.OS` mock 토글.
 - 네이티브: 유닛 프레임워크 없음 → example 앱 + 시뮬레이터 + NSLog/뷰 계층 로그 + 스크린샷으로 검증.
 
+## 구현 노트 (Task 2 — 확인한 bridgeless 뷰 접근 API, RN 0.76.5 기준)
+
+- `RCTViewRegistry` 인터페이스는 `React/Base/RCTBridgeModule.h`에 선언됨:
+  `- (UIView *)viewForReactTag:(NSNumber *)reactTag;` + `setBridgelessComponentViewProvider:`(Fabric 지원).
+- 모듈 주입 프로퍼티: `@property (nonatomic, weak) RCTViewRegistry *viewRegistry_DEPRECATED;` (RN이 모든 모듈에 주입).
+- 정석 사용처: `React/CoreModules/RCTActionSheetManager.mm`
+  - `@synthesize viewRegistry_DEPRECATED = _viewRegistry_DEPRECATED;`
+  - `[self.viewRegistry_DEPRECATED viewForReactTag:tag]`
+- 별도 `#import <React/RCTViewRegistry.h>` 불필요 — 모듈 헤더가 `<React/RCTBridgeModule.h>`를 이미 포함.
+- `viewForReactTag:`는 구·신 아키텍처 모두 동작(구: `bridge.uiManager`로 폴백). 다만 본 작업은 회귀 최소화를 위해 신 아키텍처 분기에만 적용하고 구 아키텍처 경로는 유지.
+
 ## 검증 완료 기준
 
 1. example 앱에서 풀 borrow/return 반복 시 crash 없음.
