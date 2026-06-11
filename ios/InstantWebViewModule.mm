@@ -1,6 +1,8 @@
 #import "InstantWebViewModule.h"
+#ifndef RCT_NEW_ARCH_ENABLED
 #import <React/RCTBridge.h>
 #import <React/RCTUIManager.h>
+#endif
 
 @interface InstantWebViewModule ()
 #ifdef RCT_NEW_ARCH_ENABLED
@@ -11,6 +13,13 @@
 @implementation InstantWebViewModule {
   NSMapTable<NSNumber *, UIView *> *_detachedViews;
 }
+
+#ifdef RCT_NEW_ARCH_ENABLED
+// Injected by React Native for modules that query UIViews by React tag.
+// Works under bridgeless/Fabric (it bridges to the Fabric component view
+// provider) as well as the legacy architecture.
+@synthesize viewRegistry_DEPRECATED = _viewRegistry_DEPRECATED;
+#endif
 
 RCT_EXPORT_MODULE(InstantWebView)
 
@@ -36,6 +45,14 @@ RCT_EXPORT_MODULE(InstantWebView)
 
 RCT_EXPORT_METHOD(detachView:(double)tag) {
   NSNumber *viewTag = @((NSInteger)tag);
+#ifdef RCT_NEW_ARCH_ENABLED
+  UIView *view = [self.viewRegistry_DEPRECATED viewForReactTag:viewTag];
+  NSLog(@"[InstantWebView] detachView tag=%@ found=%d", viewTag, view != nil);
+  if (view && view.superview) {
+    [self->_detachedViews setObject:view forKey:viewTag];
+    [view removeFromSuperview];
+  }
+#else
   RCTUIManager *uiManager = [self.bridge moduleForClass:[RCTUIManager class]];
   if (!uiManager) return;
 
@@ -47,11 +64,21 @@ RCT_EXPORT_METHOD(detachView:(double)tag) {
       [view removeFromSuperview];
     }
   }];
+#endif
 }
 
 RCT_EXPORT_METHOD(attachView:(double)tag parentTag:(double)parentTag) {
   NSNumber *viewTag = @((NSInteger)tag);
   NSNumber *parentViewTag = @((NSInteger)parentTag);
+#ifdef RCT_NEW_ARCH_ENABLED
+  UIView *view = [self->_detachedViews objectForKey:viewTag];
+  UIView *parent = [self.viewRegistry_DEPRECATED viewForReactTag:parentViewTag];
+  NSLog(@"[InstantWebView] attachView tag=%@ parent=%d", viewTag, parent != nil);
+  if (view && parent) {
+    [parent addSubview:view];
+    [self->_detachedViews removeObjectForKey:viewTag];
+  }
+#else
   RCTUIManager *uiManager = [self.bridge moduleForClass:[RCTUIManager class]];
   if (!uiManager) return;
 
@@ -64,6 +91,7 @@ RCT_EXPORT_METHOD(attachView:(double)tag parentTag:(double)parentTag) {
       [self->_detachedViews removeObjectForKey:viewTag];
     }
   }];
+#endif
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED
