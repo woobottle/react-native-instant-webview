@@ -1,7 +1,10 @@
-import { NativeModules, Platform, findNodeHandle } from 'react-native';
+import { NativeModules, Platform, TurboModuleRegistry, findNodeHandle } from 'react-native';
 import type { RefObject } from 'react';
 
-const NativeModule = NativeModules.InstantWebView;
+// Under the New Architecture (bridgeless) the legacy `NativeModules.InstantWebView`
+// accessor can be null, so resolve the TurboModule via TurboModuleRegistry first
+// and fall back to NativeModules on the legacy architecture.
+const NativeModule = TurboModuleRegistry.get('InstantWebView') ?? NativeModules.InstantWebView;
 
 /**
  * Native attach/detach reparents a view through the legacy bridge's

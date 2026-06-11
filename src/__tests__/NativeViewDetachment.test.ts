@@ -47,7 +47,8 @@ describe('hasNativeModule (platform-aware new-arch gate)', () => {
     let result = false;
     jest.isolateModules(() => {
       jest.doMock('react-native', () => ({
-        NativeModules: { InstantWebView: {} },
+        NativeModules: {},
+        TurboModuleRegistry: { get: () => ({}) },
         findNodeHandle: () => 1,
         Platform: { OS: os },
       }));

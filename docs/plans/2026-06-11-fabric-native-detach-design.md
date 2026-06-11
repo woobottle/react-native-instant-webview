@@ -59,6 +59,22 @@ export const hasNativeModule =
 - 별도 `#import <React/RCTViewRegistry.h>` 불필요 — 모듈 헤더가 `<React/RCTBridgeModule.h>`를 이미 포함.
 - `viewForReactTag:`는 구·신 아키텍처 모두 동작(구: `bridge.uiManager`로 폴백). 다만 본 작업은 회귀 최소화를 위해 신 아키텍처 분기에만 적용하고 구 아키텍처 경로는 유지.
 
+## PoC 결과 (2026-06-11, example/bare RN 0.76.5, iOS 시뮬레이터, 새 아키텍처/bridgeless)
+
+접근 A **성공** — 단, 검증 중 두 개의 추가 문제를 발견·해결했다.
+
+1. **모듈 미해석**: `NativeModules.InstantWebView`가 bridgeless에서 `null`이라 native 경로가 아예 호출되지 않았다(`hasNativeModule=false`).
+   → 해결: `TurboModuleRegistry.get('InstantWebView') ?? NativeModules.InstantWebView`로 해석.
+2. **Fabric view flattening**: 레이아웃 스타일만 가진 holder `<View>`를 Fabric이 평탄화(네이티브 뷰 미생성)해 `viewForReactTag`가 nil 반환(`detachView found=0`).
+   → 해결: holder와 슬롯 컨테이너에 `collapsable={false}` 부여(실제 네이티브 뷰 강제).
+
+검증 로그(자동 borrow/return 사이클 반복):
+- `detachView tag=N found=1`, `attachView tag=N parent=1` 반복 — 뷰 조회·이동 성공.
+- 다회 사이클에서 **크래시 없음**(앱 지속 실행).
+- idle 위상: stage 비어 있음(트리에서 detach). borrow 위상: 웹 콘텐츠 정상 렌더(재로드 없이 동일 풀 인스턴스 재사용 — 풀링 유지).
+
+결론: 접근 A로 iOS Fabric native detach 동작 확인. 접근 B(커스텀 컴포넌트) 불필요.
+
 ## 검증 완료 기준
 
 1. example 앱에서 풀 borrow/return 반복 시 crash 없음.

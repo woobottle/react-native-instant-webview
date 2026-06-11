@@ -47,7 +47,6 @@ RCT_EXPORT_METHOD(detachView:(double)tag) {
   NSNumber *viewTag = @((NSInteger)tag);
 #ifdef RCT_NEW_ARCH_ENABLED
   UIView *view = [self.viewRegistry_DEPRECATED viewForReactTag:viewTag];
-  NSLog(@"[InstantWebView] detachView tag=%@ found=%d", viewTag, view != nil);
   if (view && view.superview) {
     [self->_detachedViews setObject:view forKey:viewTag];
     [view removeFromSuperview];
@@ -73,7 +72,6 @@ RCT_EXPORT_METHOD(attachView:(double)tag parentTag:(double)parentTag) {
 #ifdef RCT_NEW_ARCH_ENABLED
   UIView *view = [self->_detachedViews objectForKey:viewTag];
   UIView *parent = [self.viewRegistry_DEPRECATED viewForReactTag:parentViewTag];
-  NSLog(@"[InstantWebView] attachView tag=%@ parent=%d", viewTag, parent != nil);
   if (view && parent) {
     [parent addSubview:view];
     [self->_detachedViews removeObjectForKey:viewTag];

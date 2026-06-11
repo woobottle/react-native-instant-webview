@@ -109,9 +109,17 @@ const WebViewSlot: React.FC<WebViewSlotProps> = ({
   const shouldRenderWebView = hasWebView;
 
   return (
-    <View ref={slotContainerRef} style={containerStyle} pointerEvents={isVisible ? 'auto' : 'none'}>
+    <View
+      ref={slotContainerRef}
+      style={containerStyle}
+      collapsable={false}
+      pointerEvents={isVisible ? 'auto' : 'none'}
+    >
       {shouldRenderWebView && (
-        <View ref={webViewHolderRef} style={StyleSheet.absoluteFill}>
+        // collapsable={false} keeps a real native view for the holder so the
+        // native module can resolve it by tag — Fabric would otherwise flatten
+        // a plain layout-only View away, leaving no view to detach.
+        <View ref={webViewHolderRef} style={StyleSheet.absoluteFill} collapsable={false}>
           <WebView
             ref={instance.webViewRef as React.RefObject<WebView>}
             {...(config.defaultWebViewProps || {})}
